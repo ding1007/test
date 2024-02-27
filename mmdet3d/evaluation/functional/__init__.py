@@ -4,6 +4,7 @@ from .indoor_eval import (average_precision, eval_det_cls, eval_map_recall,
 from .instance_seg_eval import (aggregate_predictions, instance_seg_eval,
                                 rename_gt)
 from .kitti_utils import do_eval, kitti_eval, kitti_eval_coco_style
+from .TJ4D_utils import do_eval, TJ4D_eval,TJ4D_eval_coco_style
 from .lyft_eval import (get_classwise_aps, get_single_class_aps, load_lyft_gts,
                         load_lyft_predictions, lyft_eval)
 from .panoptic_seg_eval import panoptic_seg_eval

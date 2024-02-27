@@ -163,11 +163,11 @@ class PFNLayer(nn.Module):
             torch.Tensor: Features of Pillars.
         """
         x = self.linear(inputs)
-        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,
+        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2, #64移到维度1上对应channel
                                                                1).contiguous()
         x = F.relu(x)
 
-        if self.mode == 'max':
+        if self.mode == 'max': #在点的维度做池化
             if aligned_distance is not None:
                 x = x.mul(aligned_distance.unsqueeze(-1))
             x_max = torch.max(x, dim=1, keepdim=True)[0]
@@ -177,6 +177,166 @@ class PFNLayer(nn.Module):
             x_max = x.sum(
                 dim=1, keepdim=True) / num_voxels.type_as(inputs).view(
                     -1, 1, 1)
+
+        if self.last_vfe:
+            return x_max
+        else:
+            x_repeat = x_max.repeat(1, inputs.shape[1], 1)
+            x_concatenated = torch.cat([x, x_repeat], dim=2)
+            return x_concatenated
+
+class AttenPFNLayer1(nn.Module):
+    """Pillar Feature Net Layer.
+
+    The Pillar Feature Net is composed of a series of these layers, but the
+    PointPillars paper results only used a single PFNLayer.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        norm_cfg (dict, optional): Config dict of normalization layers.
+            Defaults to dict(type='BN1d', eps=1e-3, momentum=0.01).
+        last_layer (bool, optional): If last_layer, there is no
+            concatenation of features. Defaults to False.
+        mode (str, optional): Pooling model to gather features inside voxels.
+            Defaults to 'max'.
+    """
+
+    def __init__(self,
+                 in_channels: int,
+                 out_channels: int,
+                 norm_cfg: Optional[dict] = dict(
+                     type='BN1d', eps=1e-3, momentum=0.01),
+                 last_layer: Optional[bool] = False,
+                 mode: Optional[str] = 'max'):
+
+        super().__init__()
+        self.name = 'AttenPFNLayer1'
+        self.last_vfe = last_layer
+        if not self.last_vfe:
+            out_channels = out_channels // 2
+        self.units = out_channels
+
+        self.norm = build_norm_layer(norm_cfg, self.units)[1]
+        self.linear = nn.Linear(in_channels, self.units, bias=False)
+
+        assert mode in ['max', 'avg']
+        self.mode = mode
+
+    def forward(self,
+                inputs: Tensor,
+                num_voxels: Optional[Tensor] = None,
+                aligned_distance: Optional[Tensor] = None) -> Tensor:
+        """Forward function.
+
+        Args:
+            inputs (torch.Tensor): Pillar/Voxel inputs with shape (N, M, C).
+                N is the number of voxels, M is the number of points in
+                voxels, C is the number of channels of point features.
+            num_voxels (torch.Tensor, optional): Number of points in each
+                voxel. Defaults to None.
+            aligned_distance (torch.Tensor, optional): The distance of
+                each points to the voxel center. Defaults to None.
+
+        Returns:
+            torch.Tensor: Features of Pillars.
+        """
+        x = self.linear(inputs)
+        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2, #64移到维度1上对应channel
+                                                               1).contiguous()
+        x = F.relu(x)
+
+        if self.mode == 'max': #在点的维度做池化
+            if aligned_distance is not None: #加权池化
+                x = x.mul(aligned_distance.unsqueeze(-1))
+            x_max = torch.max(x, dim=1, keepdim=True)[0]
+        elif self.mode == 'avg':
+            if aligned_distance is not None:
+                x = x.mul(aligned_distance.unsqueeze(-1))
+            x_max = x.sum(
+                dim=1, keepdim=True) / num_voxels.type_as(inputs).view(
+                    -1, 1, 1)
+
+        if self.last_vfe:
+            return x,x_max
+        else:
+            x_repeat = x_max.repeat(1, inputs.shape[1], 1)
+            x_concatenated = torch.cat([x, x_repeat], dim=2)
+            return x_concatenated
+
+class AttenPFNLayer2(nn.Module):
+    """Pillar Feature Net Layer.
+
+    The Pillar Feature Net is composed of a series of these layers, but the
+    PointPillars paper results only used a single PFNLayer.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        norm_cfg (dict, optional): Config dict of normalization layers.
+            Defaults to dict(type='BN1d', eps=1e-3, momentum=0.01).
+        last_layer (bool, optional): If last_layer, there is no
+            concatenation of features. Defaults to False.
+        mode (str, optional): Pooling model to gather features inside voxels.
+            Defaults to 'max'.
+    """
+
+    def __init__(self,
+                 in_channels: int,
+                 out_channels: int,
+                 norm_cfg: Optional[dict] = dict(
+                     type='BN1d', eps=1e-3, momentum=0.01),
+                 last_layer: Optional[bool] = False,
+                 mode: Optional[str] = 'avg'):
+
+        super().__init__()
+        self.name = 'AttenPFNLayer2'
+        self.last_vfe = last_layer
+        if not self.last_vfe:
+            out_channels = out_channels // 2
+        self.units = out_channels
+
+        self.norm = build_norm_layer(norm_cfg, self.units)[1]
+        self.linear = nn.Linear(in_channels, self.units, bias=False)
+
+        assert mode in ['max', 'avg']
+        self.mode = mode
+
+    def forward(self,
+                inputs: Tensor,
+                num_voxels: Optional[Tensor] = None,
+                aligned_distance: Optional[Tensor] = None) -> Tensor:
+        """Forward function.
+
+        Args:
+            inputs (torch.Tensor): Pillar/Voxel inputs with shape (N, M, C).
+                N is the number of voxels, M is the number of points in
+                voxels, C is the number of channels of point features.
+            num_voxels (torch.Tensor, optional): Number of points in each
+                voxel. Defaults to None.
+            aligned_distance (torch.Tensor, optional): The distance of
+                each points to the voxel center. Defaults to None.
+
+        Returns:
+            torch.Tensor: Features of Pillars.
+        """
+        x = self.linear(inputs)
+        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2, #64移到维度1上对应channel
+                                                               1).contiguous()
+        # x = F.relu(x)
+        x = F.softmax(x,dim=1)
+        if self.mode == 'max': # 在点的维度做池化
+            if aligned_distance is not None: # aligned_distance作为attenlayer1的输出，x为权重
+                # sum_dim_L = torch.sum(aligned_distance, dim=1, keepdim=True)
+                # aligned_distance = aligned_distance/(sum_dim_L+0.00001)
+                x = torch.mul(x,aligned_distance)
+            x_max = torch.max(x, dim=1, keepdim=True)[0]
+        elif self.mode == 'avg':
+            if aligned_distance is not None:
+                # sum_dim_L = torch.sum(aligned_distance, dim=1, keepdim=True)
+                # aligned_distance = aligned_distance / (sum_dim_L + 0.00001)
+                x = torch.mul(x,aligned_distance)
+            x_max = x.sum(dim=1, keepdim=True)
 
         if self.last_vfe:
             return x_max

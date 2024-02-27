@@ -158,9 +158,9 @@ class LiDARInstance3DBoxes(BaseInstance3DBoxes):
         """
         assert bev_direction in ('horizontal', 'vertical')
         if bev_direction == 'horizontal':
-            self.tensor[:, 1::7] = -self.tensor[:, 1::7]
+            self.tensor[:, 1::7] = -self.tensor[:, 1::7] #边界框7个值
             if self.with_yaw:
-                self.tensor[:, 6] = -self.tensor[:, 6]
+                self.tensor[:, 6] = -self.tensor[:, 6] #朝向角
         elif bev_direction == 'vertical':
             self.tensor[:, 0::7] = -self.tensor[:, 0::7]
             if self.with_yaw:

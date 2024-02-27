@@ -1,0 +1,714 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    python_version: 3.10.13
+    cli_version: 0.16.3
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1708933852.705768
+    t:
+      1:
+      - 1
+      - 5
+      - 37
+      - 38
+      - 41
+      - 53
+      - 55
+      - 82
+      2:
+      - 1
+      - 5
+      - 37
+      - 38
+      - 41
+      - 53
+      - 55
+      - 82
+      3:
+      - 2
+      - 23
+      4: 3.10.13
+      5: 0.16.3
+      8:
+      - 5
+      13: linux-x86_64
+voxel_size:
+  desc: null
+  value:
+  - 0.16
+  - 0.16
+  - 6
+model:
+  desc: null
+  value:
+    type: VoxelNet
+    data_preprocessor:
+      type: Det3DDataPreprocessor
+      voxel: true
+      voxel_layer:
+        max_num_points: 32
+        point_cloud_range:
+        - 0
+        - -39.68
+        - -4
+        - 69.12
+        - 39.68
+        - 2
+        voxel_size:
+        - 0.16
+        - 0.16
+        - 6
+        max_voxels:
+        - 16000
+        - 40000
+    voxel_encoder:
+      type: PillarFeatureNet
+      in_channels: 5
+      feat_channels:
+      - 64
+      with_distance: false
+      voxel_size:
+      - 0.16
+      - 0.16
+      - 6
+      point_cloud_range:
+      - 0
+      - -39.68
+      - -4
+      - 69.12
+      - 39.68
+      - 2
+    middle_encoder:
+      type: PointPillarsScatter
+      in_channels: 64
+      output_shape:
+      - 496
+      - 432
+    backbone:
+      type: SECOND
+      in_channels: 64
+      layer_nums:
+      - 3
+      - 5
+      - 5
+      layer_strides:
+      - 2
+      - 2
+      - 2
+      out_channels:
+      - 64
+      - 128
+      - 256
+    neck:
+      type: SECONDFPN
+      in_channels:
+      - 64
+      - 128
+      - 256
+      upsample_strides:
+      - 1
+      - 2
+      - 4
+      out_channels:
+      - 128
+      - 128
+      - 128
+    bbox_head:
+      type: Anchor3DHead
+      num_classes: 4
+      in_channels: 384
+      feat_channels: 384
+      use_direction_classifier: true
+      assign_per_class: true
+      anchor_generator:
+        type: AlignedAnchor3DRangeGenerator
+        ranges:
+        - - 0
+          - -39.68
+          - -1.363
+          - 69.12
+          - 39.68
+          - -1.363
+        - - 0
+          - -39.68
+          - -1.163
+          - 69.12
+          - 39.68
+          - -1.163
+        - - 0
+          - -39.68
+          - -1.353
+          - 69.12
+          - 39.68
+          - -1.353
+        - - 0
+          - -39.68
+          - -1.403
+          - 69.12
+          - 39.68
+          - -1.403
+        sizes:
+        - - 4.56
+          - 1.84
+          - 1.7
+        - - 0.8
+          - 0.6
+          - 1.69
+        - - 1.77
+          - 0.78
+          - 1.6
+        - - 10.76
+          - 2.66
+          - 3.47
+        rotations:
+        - 0
+        - 1.57
+        reshape_out: false
+      diff_rad_by_sin: true
+      bbox_coder:
+        type: DeltaXYZWLHRBBoxCoder
+      loss_cls:
+        type: mmdet.FocalLoss
+        use_sigmoid: true
+        gamma: 2.0
+        alpha: 0.25
+        loss_weight: 1.0
+      loss_bbox:
+        type: mmdet.SmoothL1Loss
+        beta: 1.0
+        loss_weight: 2.0
+      loss_dir:
+        type: mmdet.CrossEntropyLoss
+        use_sigmoid: false
+        loss_weight: 0.2
+    train_cfg:
+      assigner:
+      - type: Max3DIoUAssigner
+        iou_calculator:
+          type: mmdet3d.BboxOverlapsNearest3D
+        pos_iou_thr: 0.6
+        neg_iou_thr: 0.45
+        min_pos_iou: 0.45
+        ignore_iof_thr: -1
+      - type: Max3DIoUAssigner
+        iou_calculator:
+          type: mmdet3d.BboxOverlapsNearest3D
+        pos_iou_thr: 0.5
+        neg_iou_thr: 0.35
+        min_pos_iou: 0.35
+        ignore_iof_thr: -1
+      - type: Max3DIoUAssigner
+        iou_calculator:
+          type: mmdet3d.BboxOverlapsNearest3D
+        pos_iou_thr: 0.5
+        neg_iou_thr: 0.35
+        min_pos_iou: 0.35
+        ignore_iof_thr: -1
+      - type: Max3DIoUAssigner
+        iou_calculator:
+          type: mmdet3d.BboxOverlapsNearest3D
+        pos_iou_thr: 0.6
+        neg_iou_thr: 0.45
+        min_pos_iou: 0.45
+        ignore_iof_thr: -1
+      allowed_border: 0
+      pos_weight: -1
+      debug: false
+    test_cfg:
+      use_rotate_nms: true
+      nms_across_levels: false
+      nms_thr: 0.01
+      score_thr: 0.1
+      min_bbox_size: 0
+      nms_pre: 100
+      max_num: 50
+dataset_type:
+  desc: null
+  value: TJ4DDataset
+data_root:
+  desc: null
+  value: data/TJ4D/
+class_names:
+  desc: null
+  value:
+  - Car
+  - Pedestrian
+  - Cyclist
+  - Truck
+point_cloud_range:
+  desc: null
+  value:
+  - 0
+  - -39.68
+  - -4
+  - 69.12
+  - 39.68
+  - 2
+input_modality:
+  desc: null
+  value:
+    use_lidar: true
+    use_camera: false
+metainfo:
+  desc: null
+  value:
+    classes:
+    - Car
+    - Pedestrian
+    - Cyclist
+    - Truck
+backend_args:
+  desc: null
+  value: null
+train_pipeline:
+  desc: null
+  value:
+  - type: LoadPointsFromFile
+    coord_type: LIDAR
+    load_dim: 8
+    use_dim:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 5
+    backend_args: null
+  - type: LoadAnnotations3D
+    with_bbox_3d: true
+    with_label_3d: true
+  - type: RandomFlip3D
+    flip_ratio_bev_horizontal: 0.5
+  - type: GlobalRotScaleTrans
+    rot_range:
+    - -0.78539816
+    - 0.78539816
+    scale_ratio_range:
+    - 0.95
+    - 1.05
+  - type: PointsRangeFilter
+    point_cloud_range:
+    - 0
+    - -39.68
+    - -4
+    - 69.12
+    - 39.68
+    - 2
+  - type: ObjectRangeFilter
+    point_cloud_range:
+    - 0
+    - -39.68
+    - -4
+    - 69.12
+    - 39.68
+    - 2
+  - type: PointShuffle
+  - type: Pack3DDetInputs
+    keys:
+    - points
+    - gt_labels_3d
+    - gt_bboxes_3d
+test_pipeline:
+  desc: null
+  value:
+  - type: LoadPointsFromFile
+    coord_type: LIDAR
+    load_dim: 8
+    use_dim:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 5
+    backend_args: null
+  - type: Pack3DDetInputs
+    keys:
+    - points
+eval_pipeline:
+  desc: null
+  value:
+  - backend_args: null
+    coord_type: LIDAR
+    load_dim: 8
+    type: LoadPointsFromFile
+    use_dim:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 5
+  - keys:
+    - points
+    type: Pack3DDetInputs
+train_dataloader:
+  desc: null
+  value:
+    batch_size: 16
+    num_workers: 8
+    persistent_workers: true
+    sampler:
+      type: DefaultSampler
+      shuffle: true
+    dataset:
+      type: RepeatDataset
+      times: 1
+      dataset:
+        type: TJ4DDataset
+        data_root: data/TJ4D/
+        ann_file: TJ4Dv2_infos_train.pkl
+        data_prefix:
+          pts: training/velodyne_reduced
+        pipeline:
+        - type: LoadPointsFromFile
+          coord_type: LIDAR
+          load_dim: 8
+          use_dim:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 5
+          backend_args: null
+        - type: LoadAnnotations3D
+          with_bbox_3d: true
+          with_label_3d: true
+        - type: RandomFlip3D
+          flip_ratio_bev_horizontal: 0.5
+        - type: GlobalRotScaleTrans
+          rot_range:
+          - -0.78539816
+          - 0.78539816
+          scale_ratio_range:
+          - 0.95
+          - 1.05
+        - type: PointsRangeFilter
+          point_cloud_range:
+          - 0
+          - -39.68
+          - -4
+          - 69.12
+          - 39.68
+          - 2
+        - type: ObjectRangeFilter
+          point_cloud_range:
+          - 0
+          - -39.68
+          - -4
+          - 69.12
+          - 39.68
+          - 2
+        - type: PointShuffle
+        - type: Pack3DDetInputs
+          keys:
+          - points
+          - gt_labels_3d
+          - gt_bboxes_3d
+        modality:
+          use_lidar: true
+          use_camera: false
+        test_mode: false
+        metainfo:
+          classes:
+          - Car
+          - Pedestrian
+          - Cyclist
+          - Truck
+        box_type_3d: LiDAR
+        backend_args: null
+val_dataloader:
+  desc: null
+  value:
+    batch_size: 16
+    num_workers: 8
+    persistent_workers: true
+    drop_last: false
+    sampler:
+      type: DefaultSampler
+      shuffle: false
+    dataset:
+      type: TJ4DDataset
+      data_root: data/TJ4D/
+      data_prefix:
+        pts: training/velodyne_reduced
+      ann_file: TJ4Dv2_infos_val.pkl
+      pipeline:
+      - backend_args: null
+        coord_type: LIDAR
+        load_dim: 8
+        type: LoadPointsFromFile
+        use_dim:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 5
+      - keys:
+        - points
+        type: Pack3DDetInputs
+      modality:
+        use_lidar: true
+        use_camera: false
+      test_mode: true
+      metainfo:
+        classes:
+        - Car
+        - Pedestrian
+        - Cyclist
+        - Truck
+      box_type_3d: LiDAR
+      backend_args: null
+test_dataloader:
+  desc: null
+  value:
+    batch_size: 1
+    num_workers: 1
+    persistent_workers: true
+    drop_last: false
+    sampler:
+      type: DefaultSampler
+      shuffle: false
+    dataset:
+      type: TJ4DDataset
+      data_root: data/TJ4D/
+      data_prefix:
+        pts: training/velodyne_reduced
+      ann_file: TJ4Dv2_infos_test.pkl
+      pipeline:
+      - type: LoadPointsFromFile
+        coord_type: LIDAR
+        load_dim: 8
+        use_dim:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 5
+        backend_args: null
+      - type: Pack3DDetInputs
+        keys:
+        - points
+      modality:
+        use_lidar: true
+        use_camera: false
+      test_mode: true
+      metainfo:
+        classes:
+        - Car
+        - Pedestrian
+        - Cyclist
+        - Truck
+      box_type_3d: LiDAR
+      backend_args: null
+val_evaluator:
+  desc: null
+  value:
+    type: TJ4DMetric
+    ann_file: data/TJ4D/TJ4Dv2_infos_val.pkl
+    metric: bbox
+    backend_args: null
+test_evaluator:
+  desc: null
+  value:
+    type: TJ4DMetric
+    ann_file: data/TJ4D/TJ4D_infos_val.pkl
+    metric: bbox
+    backend_args: null
+vis_backends:
+  desc: null
+  value:
+  - type: LocalVisBackend
+visualizer:
+  desc: null
+  value:
+    type: Visualizer
+    vis_backends:
+    - type: WandbVisBackend
+    name: visualizer
+lr:
+  desc: null
+  value: 0.001
+optim_wrapper:
+  desc: null
+  value:
+    type: OptimWrapper
+    optimizer:
+      type: AdamW
+      lr: 0.001
+      betas:
+      - 0.95
+      - 0.99
+      weight_decay: 0.01
+    clip_grad:
+      max_norm: 35
+      norm_type: 2
+param_scheduler:
+  desc: null
+  value:
+  - type: CosineAnnealingLR
+    T_max: 32.0
+    eta_min: 0.01
+    begin: 0
+    end: 32.0
+    by_epoch: true
+    convert_to_iter_based: true
+  - type: CosineAnnealingLR
+    T_max: 48.0
+    eta_min: 1.0000000000000001e-07
+    begin: 32.0
+    end: 80
+    by_epoch: true
+    convert_to_iter_based: true
+  - type: CosineAnnealingMomentum
+    T_max: 32.0
+    eta_min: 0.8947368421052632
+    begin: 0
+    end: 32.0
+    by_epoch: true
+    convert_to_iter_based: true
+  - type: CosineAnnealingMomentum
+    T_max: 48.0
+    eta_min: 1
+    begin: 32.0
+    end: 80
+    convert_to_iter_based: true
+train_cfg:
+  desc: null
+  value:
+    by_epoch: true
+    max_epochs: 80
+    val_interval: 1
+val_cfg:
+  desc: null
+  value: {}
+test_cfg:
+  desc: null
+  value: {}
+auto_scale_lr:
+  desc: null
+  value:
+    enable: false
+    base_batch_size: 48
+default_scope:
+  desc: null
+  value: mmdet3d
+default_hooks:
+  desc: null
+  value:
+    timer:
+      type: IterTimerHook
+    logger:
+      type: LoggerHook
+      interval: 50
+    param_scheduler:
+      type: ParamSchedulerHook
+    checkpoint:
+      type: CheckpointHook
+      interval: -1
+    sampler_seed:
+      type: DistSamplerSeedHook
+    visualization:
+      type: Det3DVisualizationHook
+env_cfg:
+  desc: null
+  value:
+    cudnn_benchmark: false
+    mp_cfg:
+      mp_start_method: fork
+      opencv_num_threads: 0
+    dist_cfg:
+      backend: nccl
+log_processor:
+  desc: null
+  value:
+    type: LogProcessor
+    window_size: 50
+    by_epoch: true
+log_level:
+  desc: null
+  value: INFO
+load_from:
+  desc: null
+  value: null
+resume:
+  desc: null
+  value: false
+custom_imports:
+  desc: null
+  value:
+    imports:
+    - mmdet3d.datasets.TJ4D_dataset
+    - mmdet3d.evaluation.metrics.TJ4D_metric
+    - mmdet3d.models.voxel_encoders.pillar_encoder
+    allow_failed_imports: false
+db_sampler:
+  desc: null
+  value:
+    data_root: data/TJ4D/
+    info_path: data/TJ4D/TJ4D_dbinfos_train.pkl
+    rate: 1.0
+    prepare:
+      filter_by_min_points:
+        Car: 5
+        Pedestrian: 3
+        Cyclist: 4
+        Truck: 6
+    classes:
+    - Car
+    - Pedestrian
+    - Cyclist
+    - Truck
+    sample_groups:
+      Car: 10
+      Pedestrian: 5
+      Cyclist: 10
+      Truck: 5
+    points_loader:
+      type: LoadPointsFromFile
+      coord_type: LIDAR
+      load_dim: 8
+      use_dim:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 5
+      backend_args: null
+    backend_args: null
+info_prefix:
+  desc: null
+  value: TJ4Dv2
+voxel_encoder:
+  desc: null
+  value:
+    type: PillarFeatureNet
+    in_channels: 5
+    feat_channels:
+    - 64
+    with_distance: false
+    voxel_size:
+    - 0.16
+    - 0.16
+    - 6
+    point_cloud_range:
+    - 0
+    - -39.68
+    - -4
+    - 69.12
+    - 39.68
+    - 2
+randomness:
+  desc: null
+  value:
+    seed: 104156657
+epoch_num:
+  desc: null
+  value: 80
+launcher:
+  desc: null
+  value: none
+work_dir:
+  desc: null
+  value: ./results/TJ4Dv2_nodbsampler

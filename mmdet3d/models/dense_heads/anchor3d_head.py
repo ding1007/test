@@ -272,7 +272,7 @@ class Anchor3DHead(Base3DDenseHead, AnchorTrainMixin):
         label_weights = label_weights.reshape(-1)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.num_classes)
         assert labels.max().item() <= self.num_classes
-        loss_cls = self.loss_cls(
+        loss_cls = self.loss_cls( #TODO：计算分类损失
             cls_score, labels, label_weights, avg_factor=num_total_samples)
 
         # regression loss
@@ -411,8 +411,8 @@ class Anchor3DHead(Base3DDenseHead, AnchorTrainMixin):
             num_total_pos + num_total_neg if self.sampling else num_total_pos)
 
         # num_total_samples = None
-        with amp.autocast(enabled=False):
-            losses_cls, losses_bbox, losses_dir = multi_apply(
+        with amp.autocast(enabled=False): #的作用是在指定的上下文中，将自动混合精度计算禁用，即不使用半精度浮点数进行计算。这可以在某些情况下用于解决混合精度训练中可能出现的数值不稳定性或其他问题。通过将 enabled 参数设置为 False，可以在需要时暂时禁用混合精度计算，以确保计算的稳定性和精度。
+            losses_cls, losses_bbox, losses_dir = multi_apply( #计算损失
                 self._loss_by_feat_single,
                 cast_tensor_type(cls_scores, dst_type=torch.float32),
                 cast_tensor_type(bbox_preds, dst_type=torch.float32),

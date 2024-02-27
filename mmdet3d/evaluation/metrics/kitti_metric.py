@@ -187,7 +187,7 @@ class KittiMetric(BaseMetric):
             results,
             pklfile_prefix=self.pklfile_prefix,
             submission_prefix=self.submission_prefix,
-            classes=self.classes)
+            classes=self.classes)  # 转成标注格式
 
         metric_dict = {}
 

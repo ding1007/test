@@ -168,6 +168,28 @@ def create_groundtruth_database(dataset_class_name,
                     with_label_3d=True,
                     backend_args=backend_args)
             ])
+    elif dataset_class_name == 'TJ4DDataset':
+        backend_args = None
+        dataset_cfg.update(
+            modality=dict(
+                use_lidar=True,
+                use_camera=with_mask,
+            ),
+            data_prefix=dict(
+                pts='training/velodyne_reduced', img='training/image_2'),
+            pipeline=[
+                dict(
+                    type='LoadPointsFromFile',
+                    coord_type='LIDAR',
+                    load_dim=8,
+                    use_dim=8,
+                    backend_args=backend_args),
+                dict(
+                    type='LoadAnnotations3D',
+                    with_bbox_3d=True,
+                    with_label_3d=True,
+                    backend_args=backend_args)
+            ])
 
     elif dataset_class_name == 'NuScenesDataset':
         dataset_cfg.update(

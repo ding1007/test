@@ -2,7 +2,7 @@ _base_ = [
     '../_base_/models/pointpillars_hv_secfpn_kitti.py',
     '../_base_/datasets/kitti-3d-3class.py',
     '../_base_/schedules/cyclic-40e.py', '../_base_/default_runtime.py'
-]
+] #继承
 
 point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
 # dataset settings
@@ -12,6 +12,7 @@ metainfo = dict(classes=class_names)
 backend_args = None
 
 # PointPillars adopted a different sampling strategies among classes
+# PointPillars在类别之间采用了不同的采样策略
 db_sampler = dict(
     data_root=data_root,
     info_path=data_root + 'kitti_dbinfos_train.pkl',
@@ -29,7 +30,9 @@ db_sampler = dict(
         backend_args=backend_args),
     backend_args=backend_args)
 
-# PointPillars uses different augmentation hyper parameters
+# PointPillars uses different augmentation hyper parameters 
+# PointPillars使用不同的数据增强超参数
+# 删去了Obeject noise
 train_pipeline = [
     dict(
         type='LoadPointsFromFile',
@@ -38,7 +41,8 @@ train_pipeline = [
         use_dim=4,
         backend_args=backend_args),
     dict(type='LoadAnnotations3D', with_bbox_3d=True, with_label_3d=True),
-    dict(type='ObjectSample', db_sampler=db_sampler, use_ground_plane=True),
+    # TODO:
+    dict(type='ObjectSample', db_sampler=db_sampler, use_ground_plane=False),
     dict(type='RandomFlip3D', flip_ratio_bev_horizontal=0.5),
     dict(
         type='GlobalRotScaleTrans',
@@ -75,14 +79,14 @@ test_pipeline = [
         ]),
     dict(type='Pack3DDetInputs', keys=['points'])
 ]
-
+#TODO:不会用此用法
 train_dataloader = dict(
     dataset=dict(dataset=dict(pipeline=train_pipeline, metainfo=metainfo)))
 test_dataloader = dict(dataset=dict(pipeline=test_pipeline, metainfo=metainfo))
 val_dataloader = dict(dataset=dict(pipeline=test_pipeline, metainfo=metainfo))
 # In practice PointPillars also uses a different schedule
 # optimizer
-lr = 0.001
+lr = 0.003
 epoch_num = 80
 optim_wrapper = dict(
     optimizer=dict(lr=lr), clip_grad=dict(max_norm=35, norm_type=2))
@@ -124,7 +128,8 @@ param_scheduler = [
 # specifically tune this parameter.
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
-# repeat factor is 2, so we actually train 160 epochs.
+# repeat factor is 2, so we actually train 160 epochs. 
+# 重复因子是指在每个周期内重复使用相同的数据两次。
 train_cfg = dict(by_epoch=True, max_epochs=epoch_num, val_interval=2)
 val_cfg = dict()
 test_cfg = dict()

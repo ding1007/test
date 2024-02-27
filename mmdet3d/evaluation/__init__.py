@@ -2,6 +2,9 @@
 from mmdet3d.evaluation.functional.kitti_utils import (do_eval, eval_class,
                                                        kitti_eval,
                                                        kitti_eval_coco_style)
+from mmdet3d.evaluation.functional.TJ4D_utils import (do_eval, eval_class,
+                                                       TJ4D_eval
+                                                       )
 from .functional import (aggregate_predictions, average_precision,
                          eval_det_cls, eval_map_recall, fast_hist, get_acc,
                          get_acc_cls, get_classwise_aps, get_single_class_aps,
@@ -13,7 +16,7 @@ from .metrics import (IndoorMetric, InstanceSegMetric, KittiMetric, LyftMetric,
                       WaymoMetric)
 
 __all__ = [
-    'kitti_eval_coco_style', 'kitti_eval', 'indoor_eval', 'lyft_eval',
+    'kitti_eval_coco_style', 'kitti_eval','TJ4D_eval' 'indoor_eval', 'lyft_eval',
     'seg_eval', 'instance_seg_eval', 'average_precision', 'eval_det_cls',
     'eval_map_recall', 'indoor_eval', 'aggregate_predictions', 'rename_gt',
     'instance_seg_eval', 'load_lyft_gts', 'load_lyft_predictions', 'lyft_eval',

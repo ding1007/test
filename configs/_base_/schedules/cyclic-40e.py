@@ -55,13 +55,14 @@ param_scheduler = [
 # Runtime settings，training schedule for 40e
 # Although the max_epochs is 40, this schedule is usually used we
 # RepeatDataset with repeat ratio N, thus the actual max epoch
-# number could be Nx40
+# number could be Nx40 虽然最大epoch数为40，但此进度表通常与 RepeatDataset 
+#一起使用，重复比例为 N，因此实际的最大epoch数可能是 Nx40。
 train_cfg = dict(by_epoch=True, max_epochs=40, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
 # Default setting for scaling LR automatically
-#   - `enable` means enable scaling LR automatically
-#       or not by default.
-#   - `base_batch_size` = (8 GPUs) x (6 samples per GPU).
+#   - `enable` means enable scaling LR automatically 
+#       or not by default.表示默认情况下是否启用自动缩放学习率
+#   - `base_batch_size` = (8 GPUs) x (6 samples per GPU).  (8个GPU) x (每个GPU的样本数为6)
 auto_scale_lr = dict(enable=False, base_batch_size=48)
